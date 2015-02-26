@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import argparse
+import optparse
 import subprocess
 
 # Backport this function (added in 2.7) for ease of use if it is missing
@@ -42,35 +42,42 @@ if "check_output" not in dir(subprocess):
     subprocess.check_output = temp_f
 
 # Read in the command line arguments
-parser = argparse.ArgumentParser(
-    description='Run uHTRtool over a range of crates, slots, and feds.',
-)
 
-parser.add_argument(
-    '--crates',       # The option on the command line
-    dest='crates',    # The variable to store the result in
-    metavar='crate',  # The variable to display in the help menu
-    nargs='+',        # If this flag is given, require one or more arguments
-    type=int,         # Convert arguments using int()
-    required=True,    # This flag must be present
-    # The help message to display when this program is called with -h or --help
-    help="A space separated list of crates to run over. Specifying at least one is required.",
-)
-parser.add_argument(
-    '--slots',
-    dest='slots',
-    metavar='slot',
-    nargs='+',
-    type=int,
-    help="A space separated list of slots to run over. If none are given than all slots are run over.",
-)
-parser.add_argument(
-    '--feds',
-    dest='feds',
-    metavar='FED',
-    nargs='+',
-    type=int,
-    help="A space separated list of FEDs to read. If none are given than all FEDs are read out.",
-)
+# We need to split the comma seperated string and make ints of the results, so
+# we define a function that we call on each input
+def split_callback(option, opt, value, parser):
+    split_ints = [int(i) for i in value.split(",")]
+    setattr(parser.values, option.dest, split_ints)
 
-args = parser.parse_args()
+usage = """"%prog --crates crate_num[,...] [--slots slot_num[,...]] [--feds fed_num[,...]]
+
+The `--crates` flag is mandatory and must include at least one crate to run over.
+"""
+parser = optparse.OptionParser(usage=usage)
+parser.add_option(
+    "--crates",
+    type="string",
+    action="callback",
+    callback=split_callback,
+    help="A comma separated list of crates to run over. Specifying at least one is required.",
+)
+parser.add_option(
+    "--slots",
+    type="string",
+    action="callback",
+    callback=split_callback,
+    help="A comma separated list of slots to run over. If none are given than all slots are run over.",
+)
+parser.add_option(
+    "--feds",
+    type="string",
+    action="callback",
+    callback=split_callback,
+    help="A comma separated list of FEDs to read. If none are given than all FEDs are read out.",
+)
+options = parser.parse_args()[0]
+
+# We need at least one crate
+if not options.crates:
+    print("No crates given!")
+    exit(1)
