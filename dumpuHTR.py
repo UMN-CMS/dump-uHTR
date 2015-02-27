@@ -80,7 +80,14 @@ parser.add_option(
     type="string",
     action="callback",
     callback=split_callback,
-    help="A comma separated list of crates to run over. Specifying at least one is required.",
+    help="A comma separated list of crates to run over.",
+)
+parser.add_option(
+    "--feds",
+    type="string",
+    action="callback",
+    callback=split_callback,
+    help="A comma separated list of FEDs to read.",
 )
 parser.add_option(
     "--slots",
@@ -88,13 +95,6 @@ parser.add_option(
     action="callback",
     callback=split_callback,
     help="A comma separated list of slots to run over. If none are given than all slots are run over.",
-)
-parser.add_option(
-    "--feds",
-    type="string",
-    action="callback",
-    callback=split_callback,
-    help="A comma separated list of FEDs to read. If none are given than all FEDs are read out.",
 )
 options = parser.parse_args()[0]
 
