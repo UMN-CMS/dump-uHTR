@@ -2,8 +2,27 @@
 
 import optparse
 import subprocess
+from tempfile import NamedTemporaryFile
 from distutils.spawn import find_executable
 from sys import exit
+
+# Set up the text of the script to run on each uHTR
+script_commands = (
+        "0",
+        "LINK",
+        "STATUS",
+        "QUIT",
+        "DTC",
+        "STATUS",
+        "QUIT",
+        "LUMI",
+        "QUIT",
+        "DAQ",
+        "STATUS",
+        "QUIT",
+        "EXIT",
+        "EXIT",
+)
 
 # Backport this function (added in 2.7) for ease of use if it is missing
 # Function from:
@@ -88,3 +107,11 @@ if not options.crates and not options.feds:
 if find_executable("uHTRtool.exe") is None:
     print("Can not find uHTRtool.exe!")
     exit(2)
+
+# We write a script to pass to uHTRtool using the -s flag. This file will self
+# delete when it goes out of scope (that is, exits the 'with' block)
+script_text = "\n".join(script_commands)
+with NamedTemporaryFile() as temp_file:
+    temp_file.write(script_text)
+    temp_file.flush()
+    print subprocess.check_output(["cat", temp_file.name])
