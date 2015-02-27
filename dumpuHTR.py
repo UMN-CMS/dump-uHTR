@@ -49,9 +49,9 @@ def split_callback(option, opt, value, parser):
     split_ints = [int(i) for i in value.split(",")]
     setattr(parser.values, option.dest, split_ints)
 
-usage = """"%prog --crates crate_num[,...] [--slots slot_num[,...]] [--feds fed_num[,...]]
+usage = """"%prog (--crates crate_num[,...] | --feds fed_num[,...]) [--slots slot_num[,...]]
 
-The `--crates` flag is mandatory and must include at least one crate to run over.
+The one of either the `--crates` flag or the `--feds` flag is mandatory.
 """
 parser = optparse.OptionParser(usage=usage)
 parser.add_option(
@@ -78,6 +78,6 @@ parser.add_option(
 options = parser.parse_args()[0]
 
 # We need at least one crate
-if not options.crates:
-    print("No crates given!")
+if not options.crates and not options.feds:
+    print("No crates or FEDs given!")
     exit(1)
