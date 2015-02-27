@@ -2,6 +2,8 @@
 
 import optparse
 import subprocess
+from distutils.spawn import find_executable
+from sys import exit
 
 # Backport this function (added in 2.7) for ease of use if it is missing
 # Function from:
@@ -81,3 +83,8 @@ options = parser.parse_args()[0]
 if not options.crates and not options.feds:
     print("No crates or FEDs given!")
     exit(1)
+
+# Call uHTRtool
+if find_executable("uHTRtool.exe") is None:
+    print("Can not find uHTRtool.exe!")
+    exit(2)
