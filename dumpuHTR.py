@@ -114,4 +114,3 @@ script_text = "\n".join(script_commands)
 with NamedTemporaryFile() as temp_file:
     temp_file.write(script_text)
     temp_file.flush()
-    print subprocess.check_output(["cat", temp_file.name])
