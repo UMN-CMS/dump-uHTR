@@ -8,20 +8,20 @@ from sys import exit
 
 # Set up the text of the script to run on each uHTR
 script_commands = (
-        "0",
-        "LINK",
-        "STATUS",
-        "QUIT",
-        "DTC",
-        "STATUS",
-        "QUIT",
-        "LUMI",
-        "QUIT",
-        "DAQ",
-        "STATUS",
-        "QUIT",
-        "EXIT",
-        "EXIT",
+    "0",
+    "LINK",
+    "STATUS",
+    "QUIT",
+    "DTC",
+    "STATUS",
+    "QUIT",
+    "LUMI",
+    "QUIT",
+    "DAQ",
+    "STATUS",
+    "QUIT",
+    "EXIT",
+    "EXIT",
 )
 
 # Backport this function (added in 2.7) for ease of use if it is missing
@@ -57,7 +57,7 @@ if "check_output" not in dir(subprocess):
             cmd = kwargs.get("args")
             if cmd is None:
                 cmd = popenargs[0]
-            raise CalledProcessError(retcode, cmd)
+            raise subprocess.CalledProcessError(retcode, cmd)
         return output
 
     subprocess.check_output = temp_f
