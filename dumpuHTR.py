@@ -24,6 +24,13 @@ script_commands = (
     "EXIT",
 )
 
+# FED map: FED -> Crate
+fed_map = {
+    1118: 22,
+    1120: 29,
+    1122: 32,
+}
+
 # Backport this function (added in 2.7) for ease of use if it is missing
 # Function from:
 # https://hg.python.org/cpython/file/d37f963394aa/Lib/subprocess.py#l544
@@ -61,6 +68,17 @@ if "check_output" not in dir(subprocess):
         return output
 
     subprocess.check_output = temp_f
+
+
+# Return a IP address from slot and crate
+def crate_slot_to_ip(crate, slot):
+    ip = "192.168.{crate_num}.{slot_num}".format(
+        crate_num=int(crate),
+        slot_num=4 * int(slot)
+    )
+
+    return ip
+
 
 # Read in the command line arguments
 
@@ -103,10 +121,34 @@ if not options.crates and not options.feds:
     print("No crates or FEDs given!")
     exit(1)
 
+# If no slots, run on all
+if not options.slots:
+    options.slots = range(1, 13)
+
 # Call uHTRtool
 if find_executable("uHTRtool.exe") is None:
     print("Can not find uHTRtool.exe!")
     exit(2)
+
+# Make a list of the IP address, slots, and crates
+is_addresses = []
+if options.crates:
+    for crate in options.crates:
+        for slot in options.slots:
+            is_addresses.append((crate_slot_to_ip(crate, slot), crate, slot))
+
+if options.feds:
+    for fed in options.feds:
+        crate = fed_map.get(fed, None)
+        # We skip bad entries or duplicates from the crate menu
+        if crate is None or crate in options.crates:
+            continue
+        for slot in options.slots:
+            is_addresses.append((crate_slot_to_ip(crate, slot), crate, slot))
+
+# Sort as its free and this way things will always be in the same order,
+# regardless of how the user inputs the devices
+is_addresses.sort()
 
 # We write a script to pass to uHTRtool using the -s flag. This file will self
 # delete when it goes out of scope (that is, exits the 'with' block)
@@ -114,3 +156,12 @@ script_text = "\n".join(script_commands)
 with NamedTemporaryFile() as temp_file:
     temp_file.write(script_text)
     temp_file.flush()
+    for ip_address, crate, slot in is_addresses:
+        header = "========== Crate: {crate_num}; Slot: {slot_num} ==========".format(
+            crate_num=crate,
+            slot_num=slot
+        )
+        print header
+        command_to_run = ["uHTRtool.exe", ip_address, "-s", temp_file.name]
+        output = subprocess.check_output(command_to_run)
+        print output
