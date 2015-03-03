@@ -163,5 +163,10 @@ with NamedTemporaryFile() as temp_file:
         )
         print header
         command_to_run = ["uHTRtool.exe", ip_address, "-s", temp_file.name]
-        output = subprocess.check_output(command_to_run)
+        try:
+            output = subprocess.check_output(command_to_run)
+        except CalledProcessError:
+            # We just want to catch the error message, but continue running
+            pass
+
         print output
